@@ -1,6 +1,6 @@
-#include "CFile.h"
+#include <CFile.h>
 
-#include "print.h"
+#include <print.h>
 
 int main()
 {

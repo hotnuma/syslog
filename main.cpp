@@ -16,9 +16,6 @@ int main()
         if (line.contains("rtkit-daemon["))
             continue;
 
-        else if (line.contains("CMD (command -v debian-sa1"))
-            continue;
-
         print(line);
     }
 

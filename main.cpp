@@ -1,22 +1,54 @@
+#include <CProcess.h>
 #include <CFile.h>
+#include <libapp.h>
+#include <libpath.h>
+#include <string.h>
 
 #include <print.h>
 
 int main()
 {
-    const char *filepath = "/var/log/syslog";
+    CString outpath =  pathJoin(getHomeDirectory(), "sys_log.txt");
 
-    CFile file;
-    if (!file.read(filepath))
+    CString cmd = "journalctl -b 0 --no-pager";
+
+    CProcess process;
+    if (!process.start(cmd, CP_PIPEOUT))
+    {
+        print("start failed");
+
+        return -1;
+    }
+
+    int status = process.exitStatus();
+
+    if (status != 0)
+    {
+        print("program returned : %d", status);
+
+        return -1;
+    }
+
+    CString &buffer = process.outBuff;
+    char *ptr = buffer.data();
+    char *result;
+    int length;
+
+    CFile outfile;
+    if (!outfile.open(outpath, "wb"))
         return 1;
 
-    CString line;
-    while (file.getLine(line))
+    while (strGetLinePtr(&ptr, &result, &length))
     {
-        if (line.contains("rtkit-daemon["))
+        result[length] = '\0';
+
+        if (strstr(result, "rtkit-daemon[") != nullptr)
             continue;
 
-        print(line);
+        outfile << result;
+        outfile << "\n";
+
+        print(result);
     }
 
     return 0;
